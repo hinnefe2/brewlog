@@ -1,6 +1,10 @@
+import os
+
 import datetime as dt
 import psycopg2 as pg2
 import psycopg2.sql as sql
+
+from urllib import parse
 
 
 SCORES = {'table_name': 'scores',
@@ -43,7 +47,11 @@ def _get_latest_brew_id(cursor):
 def record_brew(form_dict):
     """Record a brew in the database."""
 
-    with pg2.connect(dbname='brewlog', host='localhost') as conn:
+    parse.uses_netloc.append("postgres")
+    url = parse.urlparse(os.environ["DATABASE_URL"])
+
+    with pg2.connect(database=url.path[1:], user=url.username,
+                     password=url.password, host=url.hostname, port=url.port) as conn:
         with conn.cursor() as curr:
 
             # record the timestamp and generate a new brew_id
