@@ -1,0 +1,25 @@
+<div class="panel panel-default">
+  <div class="panel-body">
+      <p class="text-center h2" id="timer-display"></p>
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <button type="button" class="btn btn-primary btn-block" id="timer-button" onClick="firstClick();">Start</button>
+  </div>
+</div>
+
+{% for step in steps %}
+<div class="panel panel-default">
+  <div class="panel-body step-panel">
+    <div class="pull-left step-name">
+        {{ step.descr }}
+    </div>
+    <div class="pull-right">
+        <input type="text" class="step-time step-blank pull-right" name="{{ step.name }}" id="{{ step.name }}" readonly style='border:0; text-align:right'>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
