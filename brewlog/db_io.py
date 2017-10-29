@@ -77,7 +77,11 @@ def read_last_brew():
 
     params = {}
 
-    with pg2.connect(dbname='brewlog', host='localhost') as conn:
+    parse.uses_netloc.append("postgres")
+    url = parse.urlparse(os.environ["DATABASE_URL"])
+
+    with pg2.connect(database=url.path[1:], user=url.username,
+                     password=url.password, host=url.hostname, port=url.port) as conn:
         with conn.cursor() as curr:
 
             # get the parameters of the most recent brew
