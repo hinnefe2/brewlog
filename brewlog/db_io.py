@@ -14,7 +14,7 @@ SCORES = {'table_name': 'scores',
 
 PARAMS = {'table_name': 'params',
           'type_col': 'param_type',
-          'types': ['roaster', 'beans', 'amount', 'grind', 'temp']}
+          'types': ['roaster', 'beans', 'coffee', 'grind', 'temp', 'water']}
 
 TIMES = {'table_name': 'steps',
          'type_col': 'step_type',
