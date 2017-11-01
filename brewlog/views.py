@@ -9,8 +9,7 @@ recipe = [
         {'name': 'wait_bloom', 'descr': 'wait'},
         {'name': 'stir', 'descr': 'stir'},
         {'name': 'wait_stir', 'descr': 'wait'},
-        {'name': 'press', 'descr': 'press'},
-        {'name': 'done', 'descr': 'done'}]
+        {'name': 'press', 'descr': 'press'}]
 
 @app.route('/')
 @app.route('/index')
