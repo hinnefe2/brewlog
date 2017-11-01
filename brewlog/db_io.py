@@ -19,7 +19,7 @@ PARAMS = {'table_name': 'params',
 TIMES = {'table_name': 'steps',
          'type_col': 'step_type',
          'types': ['wait_cool', 'pour', 'wait_bloom', 'stir', 'wait_stir',
-                   'press', 'done']}
+                   'press']}
 
 
 def _insert(cursor, brew_id, form_dict, table_name, type_col, types):
