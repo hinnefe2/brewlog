@@ -102,3 +102,6 @@ ENV/
 
 # postgres credentials
 pgcreds.sh
+
+# vim undo files
+*.un~
