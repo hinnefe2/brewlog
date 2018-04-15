@@ -5,7 +5,7 @@ from requests_oauthlib import OAuth2Session
 
 
 CLIENT_ID = "708447731611-rtlh8cgdutkt1mnjp5psug6uiu8npfg6.apps.googleusercontent.com"  # noqa
-REDIRECT_URI = "http://localhost:5000/gCallback"
+REDIRECT_URI = "https://aerobrewlog.herokuapp.com/gCallback"
 AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
 TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
 SCOPE = "https://www.googleapis.com/auth/userinfo.email"
