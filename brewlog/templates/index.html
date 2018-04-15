@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+
   <div class="jumbotron">
   <form class="form-horizontal" action="/submit" method="post">
 
@@ -27,6 +28,11 @@
   </div>
 
   </form>
+
+    {% if current_user.is_authenticated %}
+    <a href="/logout"> Logout {{ current_user.id }}</a>
+    {% endif %}
+
   </div>
 
 {% endblock %}
