@@ -18,6 +18,7 @@ recipe = [
 
 @app.route('/')
 @app.route('/index')
+@login_required
 def index():
     # TODO: read last recipe, autopopulate
     params = read_last_brew()
@@ -25,6 +26,7 @@ def index():
 
 
 @app.route('/submit', methods=['GET', 'POST'])
+@login_required
 def submit():
     record_brew(request.form)
     return redirect('/')
