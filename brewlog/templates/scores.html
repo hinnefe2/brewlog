@@ -4,27 +4,9 @@
   </div>
 </div>
 
+{% for score in scores %}
 <div class="form-group">
-  <label for="sour">Sourness</label>
-  <input type="number" min=1 max=10 class="form-control" id="sour" name="sour">
+    <label for="{{score.name}}">{{score.descr}}</label>
+    <input type="number" min=1 max=10 class="form-control" id="{{score.name}}" name="{{score.name}}">
 </div>
-<div class="form-group">
-  <label for="bitter">Bitterness</label>
-  <input type="number" min=1 max=10 class="form-control" id="bitter" name="bitter">
-</div>
-<div class="form-group">
-  <label for="strength">Strength</label>
-  <input type="number" min=1 max=10 class="form-control" id="strength" name="strength">
-</div>
-<div class="form-group">
-  <label for="smell">Smell</label>
-  <input type="number" min=1 max=10 class="form-control" id="smell" name="smell">
-</div>
-<div class="form-group">
-  <label for="finish">Finish</label>
-  <input type="number" min=1 max=10 class="form-control" id="finish" name="finish">
-</div>
-<div class="form-group">
-  <label for="overall">Overall</label>
-  <input type="number" min=1 max=10 class="form-control" id="overall" name="overall">
-</div>
+{% endfor %}

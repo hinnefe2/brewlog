@@ -1,28 +1,6 @@
+{% for ingredient in recipe %}
 <div class="form-group">
-  <label for="roaster">Roaster</label>
-  <input type="text" class="form-control" id="roaster" name="roaster" value="{{ params.roaster }}">
+    <label for="{{ingredient.name}}">{{ingredient.descr}}</label>
+    <input type="{{ingredient.type}}" class="form-control" id="{{ingredient.name}}" name="{{ingredient.name}}" value="{{ingredient.value}}">
 </div>
-<div class="form-group">
-  <label for="beans">Blend</label>
-  <input type="text" class="form-control" id="beans" name="beans" value="{{ params.beans }}">
-</div>
-<div class="form-group">
-  <label for="roast_date">Roast date</label>
-  <input type="text" class="form-control" id="roast_date" name="roast_date" value="{{ params.roast_date }}">
-</div>
-<div class="form-group">
-  <label for="coffee">Coffee (g)</label>
-  <input type="number" class="form-control" id="coffee" name="coffee" value="{{ params.coffee }}">
-</div>
-<div class="form-group">
-  <label for="grind">Grind</label>
-  <input type="number" class="form-control" id="grind" name="grind" value="{{ params.grind }}">
-</div>
-<div class="form-group">
-  <label for="temp">Water temp (F)</label>
-  <input type="number" class="form-control" id="temp" name="temp" value="{{ params.temp }}">
-</div>
-<div class="form-group">
-  <label for="water">Water (g)</label>
-  <input type="number" class="form-control" id="water" name="water" value="{{ params.water }}">
-</div>
+{% endfor %}

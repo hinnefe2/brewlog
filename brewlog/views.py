@@ -1,28 +1,28 @@
 from flask import render_template, request, redirect
 from flask_login import login_required, current_user, logout_user
 
-from brewlog import app, db
+from brewlog import app
+from brewlog.config import APP_CONFIG
 from brewlog.db_io import record_brew, read_last_brew
 from brewlog.login import get_google_auth, get_oath_response, login_oath_user,\
     AUTH_URI
-
-
-recipe = [
-        {'name': 'wait_cool', 'descr': 'water cool'},
-        {'name': 'pour', 'descr': 'pour'},
-        {'name': 'wait_bloom', 'descr': 'wait'},
-        {'name': 'stir', 'descr': 'stir'},
-        {'name': 'wait_stir', 'descr': 'wait'},
-        {'name': 'press', 'descr': 'press'}]
 
 
 @app.route('/')
 @app.route('/index')
 @login_required
 def index():
-    # TODO: read last recipe, autopopulate
-    params = read_last_brew()
-    return render_template('index.html', steps=recipe, params=params)
+
+    # merge the latest recipe values from the db with the config dict
+    latest = read_last_brew()
+    recipe = [{**ingredient,
+               'value': latest[ingredient['name']] if latest else None}
+              for ingredient in APP_CONFIG['recipe']]
+
+    return render_template('index.html',
+                           recipe=recipe,
+                           steps=APP_CONFIG['steps'],
+                           scores=APP_CONFIG['scores'])
 
 
 @app.route('/submit', methods=['GET', 'POST'])
