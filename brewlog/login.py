@@ -4,6 +4,7 @@ from flask import request
 from flask_login import login_user
 from requests_oauthlib import OAuth2Session
 
+from brewlog import db
 from brewlog.models import User
 
 
