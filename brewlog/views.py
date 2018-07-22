@@ -1,10 +1,11 @@
 from flask import render_template, request, redirect
 from flask_login import login_required, login_user, current_user, logout_user
 
-from brewlog import app
+from brewlog import app, db
 from brewlog.db_io import record_brew, read_last_brew
 from brewlog.login import get_google_auth, AUTH_URI, TOKEN_URI, \
-        CLIENT_SECRET, User
+        CLIENT_SECRET
+from brewlog.models import User
 
 
 recipe = [
@@ -70,7 +71,21 @@ def callback():
 
     if resp.status_code == 200:
 
-        user = User(resp.json()['email'])
+        resp_data = resp.json()
+
+        # get the user from the db by email address
+        user = User.query.filter_by(email=resp_data['email']).first()
+
+        # create the user if we don't recognize it
+        if user is None:
+            user = User(email=resp_data['email'], name=resp_data['given_name'])
+            db.session.add(user)
+            db.session.commit()
+
+        # reload the user so that its user_id field gets populated
+        # TODO: make this less janky
+        user = User.query.filter_by(email=resp_data['email']).first()
+
         login_user(user)
 
         return redirect('/')
