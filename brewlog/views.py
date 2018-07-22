@@ -15,9 +15,12 @@ def index():
 
     # merge the latest recipe values from the db with the config dict
     latest = read_last_brew()
-    recipe = [{**ingredient,
-               'value': latest[ingredient['name']] if latest else None}
-              for ingredient in APP_CONFIG['recipe']]
+    if len(latest) != 0:
+        recipe = [{**ingredient, 'value': latest[ingredient['name']]}
+                  for ingredient in APP_CONFIG['recipe']]
+    # if we couldn't load latest values just use the config recipe dict
+    else:
+        recipe = APP_CONFIG['recipe']
 
     return render_template('index.html',
                            recipe=recipe,
