@@ -9,4 +9,4 @@ class StepRecord(db.Model):
     brew_id = db.Column(db.Integer, ForeignKey('brews.brew_id'))
     step_type = db.Column(db.String(20), nullable=False)
     step_order = db.Column(db.Integer, nullable=False)
-    value = db.Column(db.String(20), nullable=False)
+    value = db.Column(db.Interval, nullable=False)

@@ -1,40 +1,12 @@
-import os
-
 import datetime as dt
-import psycopg2 as pg2
-import psycopg2.sql as sql
 
-from urllib import parse
+from collections import ChainMap
+from datetime import timedelta
 from flask_login import current_user
 
-from brewlog import app
-
-
-SCORES = {'table_name': 'scores',
-          'type_col': 'score_type',
-          'types': ['sour', 'bitter', 'strength', 'smell', 'finish',
-                    'overall']}
-
-PARAMS = {'table_name': 'params',
-          'type_col': 'param_type',
-          'types': ['roaster', 'beans', 'roast_date', 'coffee', 'grind', 'temp', 'water']}
-
-TIMES = {'table_name': 'steps',
-         'type_col': 'step_type',
-         'types': ['wait_cool', 'pour', 'wait_bloom', 'stir', 'wait_stir',
-                   'press']}
-
-
-def _insert(cursor, brew_id, form_dict, table_name, type_col, types):
-    """Insert values into a normalized table in the database."""
-
-    # psycopg2s sql module appears to be a pain in the ass, so we're gonna just
-    # use python string formatting, at least for values we control
-    insert_sql = ("INSERT INTO {} (brew_id, {}, value) VALUES (%s, %s, %s)"
-                  .format(table_name, type_col))
-
-    for typ in types:
-        cursor.execute(insert_sql, [brew_id, typ, form_dict[typ]])
+from brewlog import db
+from brewlog.config import APP_CONFIG
+from brewlog.models import Brew, ParamRecord, StepRecord, ScoreRecord
 
 
 def _get_latest_brew_id(cursor):
@@ -52,55 +24,56 @@ def _get_latest_brew_id(cursor):
 def record_brew(form_dict):
     """Record a brew in the database."""
 
-    parse.uses_netloc.append("postgres")
-    url = parse.urlparse(os.environ["DATABASE_URL"])
+    # record the timestamp and generate a new brew_id
+    brew = Brew(datetime=dt.datetime.now(), user_id=current_user.user_id)
+    # flush the session so the brew.brew_id attribute gets populated
+    db.session.add(brew)
+    db.session.flush()
 
-    with pg2.connect(database=url.path[1:], user=url.username,
-                     password=url.password, host=url.hostname, port=url.port) as conn:
-        with conn.cursor() as curr:
+    # insert the recipe parameter values
+    for param in APP_CONFIG['recipe']:
+        record = ParamRecord(brew_id=brew.brew_id,
+                             param_type=param['name'],
+                             value=form_dict[param['name']])
+        db.session.add(record)
 
-            # record the timestamp and generate a new brew_id
-            insert_sql = sql.SQL("INSERT INTO brews (datetime) VALUES ({});")
-            now = sql.Literal(dt.datetime.now().strftime('%Y-%m-%d %H:%M'))
-            curr.execute(insert_sql.format(now))
+    # insert the step values along with their odering
+    for idx, step in enumerate(APP_CONFIG['steps']):
 
-            # get the newly generated brew_id
-            brew_id = _get_latest_brew_id(curr)
+        # convert strings like '00:01:03' to timedeltas
+        mins, secs, h_secs = map(int, form_dict[step['name']].split(':'))
+        value = timedelta(minutes=mins, seconds=secs, milliseconds=10*h_secs)
 
-            # insert the brew parameters
-            _insert(curr, brew_id, form_dict, **PARAMS)
+        record = StepRecord(brew_id=brew.brew_id,
+                            step_type=step['name'],
+                            step_order=idx,
+                            value=value)
+        db.session.add(record)
 
-            # insert the brew steps
-            _insert(curr, brew_id, form_dict, **TIMES)
+    # insert the score values
+    for score in APP_CONFIG['scores']:
+        record = ScoreRecord(brew_id=brew.brew_id,
+                             score_type=score['name'],
+                             value=form_dict[score['name']])
+        db.session.add(record)
 
-            # insert the brew scores
-            _insert(curr, brew_id, form_dict, **SCORES)
+    db.session.commit()
 
 
 def read_last_brew():
     """Read the parameters of the previous brew."""
 
-    params = {}
+    # find the current user's brew with the highest brew_id
+    latest_brew = (Brew.query.filter_by(user_id=current_user.user_id)
+                             .order_by('-brew_id')
+                             .first())
 
-    parse.uses_netloc.append("postgres")
+    # return an empty dict if user has no brews
+    if latest_brew is None:
+        return {}
 
-    if os.getenv("DATABASE_URL") is None:
-        return None
-    else:
-        url = parse.urlparse(os.getenv("DATABASE_URL"))
-
-    with pg2.connect(database=url.path[1:], user=url.username,
-                     password=url.password, host=url.hostname, port=url.port) as conn:
-        with conn.cursor() as curr:
-
-            # get the parameters of the most recent brew
-            select_sql = "SELECT param_type, value FROM params WHERE brew_id = %s"
-            brew_id = _get_latest_brew_id(curr)
-            curr.execute(select_sql, [brew_id])
-
-            # populate a dictionary of {param_type: values}
-            for row in curr.fetchall():
-                param_type, value = row
-                params[param_type] = value
+    # convert each ParamRecord object to a dict, then merge the dicts
+    param_dicts = [p.as_dict() for p in latest_brew.params]
+    params = dict(ChainMap(*param_dicts))
 
     return params
