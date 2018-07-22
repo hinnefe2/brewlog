@@ -1,10 +1,10 @@
 from flask import render_template, request, redirect
-from flask_login import login_required, login_user, current_user, logout_user
+from flask_login import login_required, current_user, logout_user
 
-from brewlog import app
+from brewlog import app, db
 from brewlog.db_io import record_brew, read_last_brew
-from brewlog.login import get_google_auth, AUTH_URI, TOKEN_URI, \
-        CLIENT_SECRET, User
+from brewlog.login import get_google_auth, get_oath_response, login_oath_user,\
+    AUTH_URI
 
 
 recipe = [
@@ -62,17 +62,10 @@ def callback():
     if current_user is not None and current_user.is_authenticated:
         return redirect('/')
 
-    google = get_google_auth()
-    google.fetch_token(TOKEN_URI, client_secret=CLIENT_SECRET,
-                       authorization_response=request.url)
-
-    resp = google.get('https://www.googleapis.com/userinfo/v2/me')
+    resp = get_oath_response()
 
     if resp.status_code == 200:
-
-        user = User(resp.json()['email'])
-        login_user(user)
-
+        login_oath_user(resp)
         return redirect('/')
 
     else:
