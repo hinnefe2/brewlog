@@ -48,7 +48,7 @@ def record_brew(form_dict):
     db.session.commit()
 
 
-def read_last_brew():
+def read_last_recipe():
     """Read the parameters of the previous brew."""
 
     # find the current user's brew with the highest brew_id
@@ -56,12 +56,17 @@ def read_last_brew():
                              .order_by('-brew_id')
                              .first())
 
-    # return an empty dict if user has no brews
+    # return the recipe without any values filled in if user doesn't hve any
+    # previous brews
     if latest_brew is None:
-        return {}
+        return APP_CONFIG['recipe']
 
     # convert each ParamRecord object to a dict, then merge the dicts
     param_dicts = [p.as_dict() for p in latest_brew.params]
-    params = dict(ChainMap(*param_dicts))
+    values = dict(ChainMap(*param_dicts))
 
-    return params
+    # merge the latest recipe values from the db with the config dict
+    recipe = [{**ingredient, 'value': values[ingredient['name']]}
+              for ingredient in APP_CONFIG['recipe']]
+
+    return recipe

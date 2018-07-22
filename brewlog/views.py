@@ -3,7 +3,7 @@ from flask_login import login_required, current_user, logout_user
 
 from brewlog import app
 from brewlog.config import APP_CONFIG
-from brewlog.db_io import record_brew, read_last_brew
+from brewlog.db_io import record_brew, read_last_recipe
 from brewlog.login import get_google_auth, get_oath_response, login_oath_user,\
     AUTH_URI
 
@@ -14,13 +14,7 @@ from brewlog.login import get_google_auth, get_oath_response, login_oath_user,\
 def index():
 
     # merge the latest recipe values from the db with the config dict
-    latest = read_last_brew()
-    if len(latest) != 0:
-        recipe = [{**ingredient, 'value': latest[ingredient['name']]}
-                  for ingredient in APP_CONFIG['recipe']]
-    # if we couldn't load latest values just use the config recipe dict
-    else:
-        recipe = APP_CONFIG['recipe']
+    recipe = read_last_recipe()
 
     return render_template('index.html',
                            recipe=recipe,
