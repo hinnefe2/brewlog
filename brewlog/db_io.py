@@ -5,6 +5,9 @@ import psycopg2 as pg2
 import psycopg2.sql as sql
 
 from urllib import parse
+from flask_login import current_user
+
+from brewlog import app
 
 
 SCORES = {'table_name': 'scores',
@@ -37,7 +40,9 @@ def _insert(cursor, brew_id, form_dict, table_name, type_col, types):
 def _get_latest_brew_id(cursor):
     """Get the brew_id of the most recent brew."""
 
-    select_sql = "SELECT MAX(brew_id) FROM brews"
+    current_id = current_user.user_id
+
+    select_sql = f"SELECT MAX(brew_id) FROM brews WHERE user_id = {current_id}"
     cursor.execute(select_sql)
     brew_id = cursor.fetchone()[0]
 
