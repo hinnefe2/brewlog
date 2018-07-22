@@ -10,7 +10,8 @@ app = Flask(__name__)
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 app.config["SECRET_KEY"] = os.getenv("BREWLOG_SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("HEROKU_POSTGRESQL_GOLD_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # create the sqlalchemy database object
 db = SQLAlchemy(app)
