@@ -9,18 +9,6 @@ from brewlog.config import APP_CONFIG
 from brewlog.models import Brew, ParamRecord, StepRecord, ScoreRecord
 
 
-def _get_latest_brew_id(cursor):
-    """Get the brew_id of the most recent brew."""
-
-    current_id = current_user.user_id
-
-    select_sql = f"SELECT MAX(brew_id) FROM brews WHERE user_id = {current_id}"
-    cursor.execute(select_sql)
-    brew_id = cursor.fetchone()[0]
-
-    return brew_id
-
-
 def record_brew(form_dict):
     """Record a brew in the database."""
 
