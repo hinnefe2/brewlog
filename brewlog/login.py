@@ -21,7 +21,7 @@ CLIENT_SECRET = os.getenv("BREWLOG_SECRET_KEY")
 def get_google_auth():
     """Return an OAuth2Session for our Google OAuth setup."""
 
-    return OAuth2Session(CLIENT_ID, scope=SCOPE, redirect_uri=REDIRECT_URI_DEV)
+    return OAuth2Session(CLIENT_ID, scope=SCOPE, redirect_uri=REDIRECT_URI)
 
 
 def get_oath_response():
