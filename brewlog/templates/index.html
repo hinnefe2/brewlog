@@ -30,7 +30,7 @@
   </form>
 
     {% if current_user.is_authenticated %}
-    <a href="/logout"> Logout {{ current_user.id }}</a>
+    <a href="/logout"> Logout {{ current_user.email }}</a>
     {% endif %}
 
   </div>
