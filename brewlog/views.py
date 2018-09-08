@@ -59,7 +59,7 @@ def logout():
 
 
 @app.route('/gCallback')
-def callback():
+def gCallback():
     """Respond to the Google OAuth2 callback."""
 
     # Redirect user to home page if already logged in.
