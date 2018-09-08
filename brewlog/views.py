@@ -9,7 +9,14 @@ from brewlog.login import get_google_auth, get_oath_response, login_oath_user,\
 
 
 @app.route('/')
-@app.route('/index')
+@app.route('/landing')
+@login_required
+def landing():
+
+    return render_template('landing.html')
+
+
+@app.route('/log')
 @login_required
 def index():
 
