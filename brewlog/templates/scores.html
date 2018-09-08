@@ -1,12 +1,12 @@
-<div class="panel panel-default">
-  <div class="panel-body">
-    <button type="submit" class="btn btn-primary btn-block">Submit</button>
-  </div>
-</div>
-
 {% for score in scores %}
 <div class="form-group">
     <label for="{{score.name}}">{{score.descr}}</label>
     <input type="number" min=1 max=10 class="form-control" id="{{score.name}}" name="{{score.name}}">
 </div>
 {% endfor %}
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <button type="submit" class="btn btn-primary btn-block">Submit</button>
+  </div>
+</div>
