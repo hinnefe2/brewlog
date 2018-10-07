@@ -8,7 +8,9 @@ from dash.dependencies import Input, Output
 
 from brewlog import app, dash_app
 from brewlog.db_io import load_wide_table, calculate_features
-from brewlog.plots import plot_time_vs_ratio
+from brewlog.optimize import (make_gp_model, make_prediction_grid,
+                              make_predictions)
+from brewlog.plots import plot_predictions
 
 
 dash_app.layout = (
@@ -50,22 +52,51 @@ def load_data_callback(n_clicks):
 
     # this gets triggered on page load, but n_clicks will be None 
     if n_clicks:
-        return load_wide_table().to_json()
+        return load_wide_table().to_json(orient='split', date_format='iso')
+
+
+# @dash_app.callback(Output(component_id='fig-img', component_property='src'),
+#                    [Input('data-container-wide-table', 'children')])
+# def show_plot_callback(jsonified_df):
+# 
+#     app.logger.info('show_plot_callback fired')
+# 
+#     # the load_data callback gets triggered on page load for some reason
+#     # which triggers this, so we have to short circuit until we get data
+#     if not jsonified_df:
+#         return None
+# 
+#     wide = pd.read_json(jsonified_df, orient='split')
+# 
+#     print(wide.columns)
+#     print(wide.dtypes)
+# 
+#     features = calculate_features(wide)
+# 
+#     return plot_time_vs_ratio(features)
 
 
 @dash_app.callback(Output(component_id='fig-img', component_property='src'),
-                   [Input('data-container-wide-table', 'children')])
-def show_plot_callback(jsonified_df):
+                   [Input('data-container-wide-table', 'children'),
+                    Input('grind-slider', 'value'),
+                    Input('water-slider', 'value')])
+def show_heatmap_callback(jsonified_df, grind_slice, water_slice):
 
-    app.logger.info('show_plot_callback fired')
+    app.logger.info('show_heatmap_callback fired')
 
     # the load_data callback gets triggered on page load for some reason
     # which triggers this, so we have to short circuit until we get data
     if not jsonified_df:
         return None
 
-    wide = pd.read_json(jsonified_df)
-
+    # read the loaded data and calculate some derived features
+    wide = pd.read_json(jsonified_df, orient='split')
     features = calculate_features(wide)
 
-    return plot_time_vs_ratio(features)
+    # fit a model to the data, discretize the parameter space, then
+    # score the model on each point in the discretized parameter space
+    model = make_gp_model(features)
+    coords = make_prediction_grid()
+    preds = make_predictions(model, coords)
+
+    return plot_predictions(preds, grind_slice, cool_slice)

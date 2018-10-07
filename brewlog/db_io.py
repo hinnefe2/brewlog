@@ -78,26 +78,42 @@ def load_wide_table():
     app.logger.info('trying to load wide table')
 
     if not current_user:
-        print('no current_user')
+        app.logger.info('no current_user')
         return pd.DataFrame()
 
     app.logger.info('loading user brews')
-    user_brews = (Brew.query.filter_by(user_id=current_user.user_id)
-                            .order_by('brew_id')
-                            .all())
+    user_brews = Brew.query.filter_by(user_id=current_user.user_id)
+    brews = (pd.read_sql(user_brews.statement, db.session.bind)
+               .set_index('brew_id'))
 
     # return an empty dataframe if the user doesn't have any brews recorded
-    if len(user_brews) == 0:
+    if len(brews) == 0:
         return pd.DataFrame()
 
-    # drop some obsolete columns
+    # load each table all at once
+    steps = pd.read_sql(StepRecord.query.statement, db.session.bind)
+    params = pd.read_sql(ParamRecord.query.statement, db.session.bind)
+    scores = pd.read_sql(ScoreRecord.query.statement, db.session.bind)
+
+    # pivot the long-form tables from the db into wide-form dataframes
+    params_wide = params.pivot(index='brew_id', columns='param_type', values='value')
+    scores_wide = scores.pivot(index='brew_id', columns='score_type', values='value')
+    steps_wide = steps.pivot(index='brew_id', columns='step_type', values='value')
+
+    # join the pivoted tables and drop some obsolete columns
     app.logger.info('making dataframe')
-    wide = (pd.DataFrame([brew.as_dict() for brew in user_brews])
-              .drop(['done', 'amount'], axis='columns'))
+    wide = (brews.join(steps_wide)
+                 .join(params_wide)
+                 .join(scores_wide)
+                 .drop(['done', 'amount'], axis='columns'))
 
     # convert numeric columns to floats
     for col in ['coffee', 'grind', 'temp', 'water']:
         wide[col] = wide[col].apply(float)
+
+    # convert timedeltas to total_seconds bc json-serializing them is a pain
+    for col in wide.select_dtypes('timedelta'):
+        wide[col] = wide[col].apply(lambda r: r.total_seconds())
 
     return wide
 
