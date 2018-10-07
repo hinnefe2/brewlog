@@ -10,3 +10,6 @@ class StepRecord(db.Model):
     step_type = db.Column(db.String(20), nullable=False)
     step_order = db.Column(db.Integer, nullable=False)
     value = db.Column(db.Interval, nullable=False)
+
+    def as_dict(self):
+        return {self.step_type: self.value}

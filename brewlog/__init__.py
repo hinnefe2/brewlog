@@ -1,5 +1,7 @@
 import os
 
+import matplotlib
+
 from flask import Flask, render_template
 from flask_login import LoginManager, login_required
 from flask_sqlalchemy import SQLAlchemy
@@ -8,6 +10,10 @@ from dash import Dash
 
 
 app = Flask(__name__)
+
+# need to set the mpl backend before we use pyplot anywhere
+# see https://stackoverflow.com/questions/2801882/generating-a-png-with-matplotlib-when-display-is-undefined  # noqa
+matplotlib.use('Agg')
 
 
 class MyDash(Dash):
