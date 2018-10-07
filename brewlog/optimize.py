@@ -22,6 +22,15 @@ bounds_ratio = [1, 3]
 bounds_grind = [1, 5]
 bounds_cool = [5, 60]
 
+# set some parameters for discretizing the space
+N_PTS = 50
+N_DIMS = 4
+
+grid_time = [60, 300]
+grid_ratio = [9, 19]
+grid_grind = [1, 10]
+grid_cool = [0, 90]
+
 
 def make_gp_model(wide):
     """Instantiate and fit a Gaussian process model."""
@@ -39,22 +48,14 @@ def make_gp_model(wide):
 
     gpr.fit(train_Xs, train_ys)
 
-    app.logger.info('fitted model with: ', gpr.kernel_)
-    app.logger.info('log marginal likelihood: ', gpr.log_marginal_likelihood_value_)
+    app.logger.info(f'fitted model with: {gpr.kernel_}')
+    app.logger.info(f'log marginal likelihood: {gpr.log_marginal_likelihood_value_}')
 
     return gpr
 
 
 def make_prediction_grid():
     """Create a numpy array of points to make predictions for."""
-
-    N_PTS = 50
-    N_DIMS = 4
-
-    grid_time = [60, 300]
-    grid_ratio = [9, 19]
-    grid_grind = [1, 10]
-    grid_cool = [0, 90]
 
     itimes = np.linspace(*grid_time, N_PTS, dtype=np.float16)
     ratios = np.linspace(*grid_ratio, N_PTS, dtype=np.float16)

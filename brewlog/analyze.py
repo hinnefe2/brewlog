@@ -1,6 +1,9 @@
 import json
+import uuid
 
 import pandas as pd
+
+from flask_caching import Cache
 
 from dash_core_components import Slider
 from dash_html_components import Div, H3, Button, Img
@@ -13,17 +16,19 @@ from brewlog.optimize import (make_gp_model, make_prediction_grid,
 from brewlog.plots import plot_predictions
 
 
-dash_app.layout = (
-        Div(className='panel panel-default', children=[
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
+def serve_layout():
+    """Create the Dash layout for the optimization app."""
+
+    # create a uuid for looking up cached things on a per-session basis
+    session_id = str(uuid.uuid4())
+
+    return Div(className='panel panel-default', children=[
 
             # placeholder for figure
             Div(id='target', className='panel-body step-panel', children=[
                 Img(id='fig-img', className="img-responsive center-block")]),
-
-            # button to load data
-            # need to do this so that current_user is populated before we query
-            Div(className='panel-body step-panel', children=[
-                Button('Load data', id='load-data-button')]),
 
             # slider for the grind size
             Div(className='panel-body step-panel', children=[
@@ -37,11 +42,37 @@ dash_app.layout = (
                 Slider(id='water-slider', min=0, max=60, step=10, value=20,
                        marks={str(i): str(i) for i in range(0, 70, 10)})]),
 
+            # button to load data
+            # need to do this so that current_user is populated before we query
+            Div(className='panel-body step-panel', children=[
+                Button('Load data', id='load-data-button')]),
+
             # hidden div to hold json-ified wide table data
             # see https://dash.plot.ly/sharing-data-between-callbacks
             Div(id='data-container-wide-table', style={'display': 'none'}),
+
+            # hidden div to hold the session_id for retrieving cached scores
+            # see https://dash.plot.ly/sharing-data-between-callbacks
+            Div(session_id, id='data-container-session-id', style={'display': 'none'}),
         ])
-)
+
+dash_app.layout = serve_layout
+
+
+@cache.memoize()
+def get_score_predictions(session_id, wide):
+    """Get (cached) predictions for the discretized brew parameter space."""
+
+    # calculate some derived features
+    features = calculate_features(wide)
+
+    # fit a model to the data, discretize the parameter space, then
+    # score the model on each point in the discretized parameter space
+    model = make_gp_model(features)
+    coords = make_prediction_grid()
+    preds = make_predictions(model, coords)
+
+    return preds
 
 
 @dash_app.callback(Output('data-container-wide-table', 'children'),
@@ -55,32 +86,12 @@ def load_data_callback(n_clicks):
         return load_wide_table().to_json(orient='split', date_format='iso')
 
 
-# @dash_app.callback(Output(component_id='fig-img', component_property='src'),
-#                    [Input('data-container-wide-table', 'children')])
-# def show_plot_callback(jsonified_df):
-# 
-#     app.logger.info('show_plot_callback fired')
-# 
-#     # the load_data callback gets triggered on page load for some reason
-#     # which triggers this, so we have to short circuit until we get data
-#     if not jsonified_df:
-#         return None
-# 
-#     wide = pd.read_json(jsonified_df, orient='split')
-# 
-#     print(wide.columns)
-#     print(wide.dtypes)
-# 
-#     features = calculate_features(wide)
-# 
-#     return plot_time_vs_ratio(features)
-
-
 @dash_app.callback(Output(component_id='fig-img', component_property='src'),
                    [Input('data-container-wide-table', 'children'),
+                    Input('data-container-session-id', 'children'),
                     Input('grind-slider', 'value'),
                     Input('water-slider', 'value')])
-def show_heatmap_callback(jsonified_df, grind_slice, water_slice):
+def show_heatmap_callback(jsonified_df, session_id, grind_slice, cool_slice):
 
     app.logger.info('show_heatmap_callback fired')
 
@@ -89,14 +100,16 @@ def show_heatmap_callback(jsonified_df, grind_slice, water_slice):
     if not jsonified_df:
         return None
 
-    # read the loaded data and calculate some derived features
+    # read the loaded raw data from the hidden div 
     wide = pd.read_json(jsonified_df, orient='split')
-    features = calculate_features(wide)
 
-    # fit a model to the data, discretize the parameter space, then
-    # score the model on each point in the discretized parameter space
-    model = make_gp_model(features)
-    coords = make_prediction_grid()
-    preds = make_predictions(model, coords)
+    # calculate predicted scores for the discretized parameter space
+    # NOTE: this function is memoized so the first call will be slow
+    # but subsequent calls will retrieve the values from the cache
+    preds = get_score_predictions(session_id, wide)
+
+    best_score = preds.sort_values('score', ascending=False).head(1)
+
+    app.logger.info(f"best score: {best_score}")
 
     return plot_predictions(preds, grind_slice, cool_slice)
