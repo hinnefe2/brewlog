@@ -96,9 +96,9 @@ def load_wide_table():
     scores = pd.read_sql(ScoreRecord.query.statement, db.session.bind)
 
     # pivot the long-form tables from the db into wide-form dataframes
-    params_wide = params.pivot(index='brew_id', columns='param_type', values='value')
-    scores_wide = scores.pivot(index='brew_id', columns='score_type', values='value')
-    steps_wide = steps.pivot(index='brew_id', columns='step_type', values='value')
+    params_wide = params.pivot('brew_id', 'param_type', 'value')
+    scores_wide = scores.pivot('brew_id', 'score_type', 'value')
+    steps_wide = steps.pivot('brew_id', 'step_type', 'value')
 
     # join the pivoted tables and drop some obsolete columns
     app.logger.info('making dataframe')
@@ -123,7 +123,7 @@ def calculate_features(wide):
 
     wide['immersion_time'] = (wide.press - wide.wait_cool)
     wide['ratio'] = wide.water / wide.coffee
-    wide['composite_score'] = wide.overall - 0.1 * wide.sour - 0.1 * wide.bitter
+    wide['composite_score'] = wide.overall - 0.1 * (wide.sour + wide.bitter)
     wide['water_cooldown'] = wide.wait_cool
 
     return wide

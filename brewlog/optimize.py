@@ -40,16 +40,22 @@ def make_gp_model(wide):
     train_Xs = wide[['immersion_time', 'ratio', 'grind', 'water_cooldown']]
     train_ys = wide[['composite_score']]
 
-    kernel = (WhiteKernel(noise_level=10) +
-              RBF(length_scale=[scale_time, scale_ratio, scale_grind, scale_cool],
-              length_scale_bounds=[bounds_time, bounds_ratio, bounds_grind, bounds_cool]))
+    scales = [scale_time, scale_ratio, scale_grind, scale_cool]
+    bounds = [bounds_time, bounds_ratio, bounds_grind, bounds_cool]
 
-    gpr = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=5, normalize_y=True)
+    # make a kernel for the GP with custom scales and bounds for each parameter
+    kernel = (WhiteKernel(noise_level=10) +
+              RBF(length_scale=scales, length_scale_bounds=bounds))
+
+    gpr = GaussianProcessRegressor(kernel=kernel,
+                                   n_restarts_optimizer=5,
+                                   normalize_y=True)
 
     gpr.fit(train_Xs, train_ys)
 
     app.logger.info(f'fitted model with: {gpr.kernel_}')
-    app.logger.info(f'log marginal likelihood: {gpr.log_marginal_likelihood_value_}')
+    app.logger.info(f'log marginal likelihood: '
+                    '{gpr.log_marginal_likelihood_value_}')
 
     return gpr
 

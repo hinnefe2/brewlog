@@ -1,12 +1,14 @@
-import urllib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from base64 import b64encode
 from io import BytesIO
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 from brewlog.optimize import grid_time, grid_ratio, N_PTS
+
+
+sns.set_context('notebook')
+plt.style.use('ggplot')
 
 
 # TODO: make this a decorator
@@ -79,7 +81,7 @@ def plot_predictions(pred, grind_slice=4, cool_slice=30):
         #              cmap='magma',
         #              marker='x')
 
-    ax1.set_title('Predicted taste score');
-    ax2.set_title('Prediction uncertainty');
+    ax1.set_title('Predicted taste score')
+    ax2.set_title('Prediction uncertainty')
 
     return _convert_fig_to_html(fig)

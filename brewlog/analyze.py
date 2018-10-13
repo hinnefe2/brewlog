@@ -1,4 +1,3 @@
-import json
 import uuid
 
 import pandas as pd
@@ -17,6 +16,7 @@ from brewlog.plots import plot_predictions
 
 
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
 
 def serve_layout():
     """Create the Dash layout for the optimization app."""
@@ -53,8 +53,10 @@ def serve_layout():
 
             # hidden div to hold the session_id for retrieving cached scores
             # see https://dash.plot.ly/sharing-data-between-callbacks
-            Div(session_id, id='data-container-session-id', style={'display': 'none'}),
+            Div(session_id, id='data-container-session-id',
+                style={'display': 'none'}),
         ])
+
 
 dash_app.layout = serve_layout
 
@@ -81,12 +83,12 @@ def load_data_callback(n_clicks):
 
     app.logger.info('load_data_callback fired')
 
-    # this gets triggered on page load, but n_clicks will be None 
+    # this gets triggered on page load, but n_clicks will be None
     if n_clicks:
         return load_wide_table().to_json(orient='split', date_format='iso')
 
 
-@dash_app.callback(Output(component_id='fig-img', component_property='src'),
+@dash_app.callback(Output('fig-img', 'src'),
                    [Input('data-container-wide-table', 'children'),
                     Input('data-container-session-id', 'children'),
                     Input('grind-slider', 'value'),
@@ -100,7 +102,7 @@ def show_heatmap_callback(jsonified_df, session_id, grind_slice, cool_slice):
     if not jsonified_df:
         return None
 
-    # read the loaded raw data from the hidden div 
+    # read the loaded raw data from the hidden div
     wide = pd.read_json(jsonified_df, orient='split')
 
     # calculate predicted scores for the discretized parameter space

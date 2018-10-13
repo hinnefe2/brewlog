@@ -1,3 +1,5 @@
+# flake8: noqa
+
 APP_CONFIG = {
     'recipe': [
         {'name': 'roaster', 'descr': 'Roaster', 'type': 'text'},
