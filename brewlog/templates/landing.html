@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  <div class="jumbotron">
+
+    <div class="page-header text-center">
+      <a href="/"><h1>Brewlog</h1></a>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-4 col-xs-offset-4">
+        <a href="/log"><img src="static/clipboard.svg" alt="Record a brew" class="img-responsive"></a>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-4 col-xs-offset-4">
+        <a href="/analyze"><img src="static/beaker.svg" alt="Record a brew" class="img-responsive"></a>
+      </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="row">
+      <div class="page-footer text-center">
+        <a href="/logout"> Logout {{ current_user.email }}</a>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+{% endblock %}

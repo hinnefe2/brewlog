@@ -9,7 +9,14 @@ from brewlog.login import get_google_auth, get_oath_response, login_oath_user,\
 
 
 @app.route('/')
-@app.route('/index')
+@app.route('/landing')
+@login_required
+def landing():
+
+    return render_template('landing.html')
+
+
+@app.route('/log')
 @login_required
 def index():
 
@@ -52,7 +59,7 @@ def logout():
 
 
 @app.route('/gCallback')
-def callback():
+def gCallback():
     """Respond to the Google OAuth2 callback."""
 
     # Redirect user to home page if already logged in.

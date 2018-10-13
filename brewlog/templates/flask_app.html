@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{{ config }}
+{{ scripts }}
+
+{% block content %}
+
+  <div class="jumbotron">
+
+    <div class="page-header text-center">
+      <a href="/"><h1>Brewlog</h1></a>
+    </div>
+
+    <div class="container dash-div">
+      <div id="react-entry-point">
+          <div class="_dash-loading">
+              Loading...
+          </div>
+      </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="row">
+      <div class="page-footer text-center">
+        <a href="/logout"> Logout {{ current_user.email }}</a>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <footer>
+    <script id="_dash-config" type="application/json">{"url_base_pathname": "/analyze/", "requests_pathname_prefix": "/analyze/"}</script>
+    <script src="https://unpkg.com/react@15.4.2/dist/react.min.js"></script>
+    <script src="https://unpkg.com/react-dom@15.4.2/dist/react-dom.min.js"></script>
+    <script src="https://unpkg.com/dash-html-components@0.12.0/dash_html_components/bundle.js"></script>
+    <script src="https://cdn.plot.ly/plotly-1.40.1.min.js"></script>
+    <script src="https://unpkg.com/dash-core-components@0.28.3/dash_core_components/bundle.js"></script>
+    <script src="https://unpkg.com/dash-renderer@0.13.2/dash_renderer/bundle.js"></script>
+  </footer>
+
+{% endblock %}
