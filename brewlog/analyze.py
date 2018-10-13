@@ -5,7 +5,7 @@ import pandas as pd
 from flask_caching import Cache
 
 from dash_core_components import Slider
-from dash_html_components import Div, H3, Button, Img
+from dash_html_components import Div, H3, Button, Img, Table, Tr, Td, Th
 from dash.dependencies import Input, Output
 
 from brewlog import app, dash_app
@@ -41,6 +41,11 @@ def serve_layout():
                 H3('Water cool time '),
                 Slider(id='water-slider', min=0, max=60, step=10, value=20,
                        marks={str(i): str(i) for i in range(0, 70, 10)})]),
+
+            # placeholder for best params text
+            Div(className='panel-body step-panel', children=[
+                H3('Optimal recipe'),
+                Div(id='target-text', className='panel-body step-panel')]),
 
             # button to load data
             # need to do this so that current_user is populated before we query
@@ -110,8 +115,49 @@ def show_heatmap_callback(jsonified_df, session_id, grind_slice, cool_slice):
     # but subsequent calls will retrieve the values from the cache
     preds = get_score_predictions(session_id, wide)
 
-    best_score = preds.sort_values('score', ascending=False).head(1)
-
-    app.logger.info(f"best score: {best_score}")
-
     return plot_predictions(preds, grind_slice, cool_slice)
+
+
+@dash_app.callback(Output('target-text', 'children'),
+                   [Input('data-container-wide-table', 'children'),
+                    Input('data-container-session-id', 'children')])
+def show_recipes_callback(jsonified_df, session_id):
+
+    # the load_data callback gets triggered on page load for some reason
+    # which triggers this, so we have to short circuit until we get data
+    if not jsonified_df:
+        return None
+
+    # read the loaded raw data from the hidden div
+    wide = pd.read_json(jsonified_df, orient='split')
+
+    # calculate predicted scores for the discretized parameter space
+    # NOTE: this function is memoized so the first call will be slow
+    # but subsequent calls will retrieve the values from the cache
+    preds = get_score_predictions(session_id, wide)
+
+    best_score = (preds.sort_values('score', ascending=False)
+                       .head(1)
+                       .round({'itime': 0, 'ratio': 1})
+                       .loc[:, ['itime', 'grind', 'ratio', 'cool']])
+
+    best_score.columns = ['Brew Time (s)', 'Grind', 'Ratio', 'Cool Time (s)']
+
+    return generate_table(best_score)
+
+
+def generate_table(dataframe):
+    """Make a Dash table from a dataframe."""
+    # copied from https://dash.plot.ly/getting-started
+
+    return Table(className='table', style={'textAlign': 'center'}, children=(
+        # Header
+        [Tr([Th(col) for col in dataframe.columns])] +
+
+        # Body
+        # have to cast to str because serialization to JSON introduces
+        # floating point errors somewhere so you get too many decimals
+        # eg 12.1 -> 12. 09999999
+        [Tr([Td('{:.1f}'.format(val))
+             for _, row in dataframe.iterrows() for val in row])]
+    ))
