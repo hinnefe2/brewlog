@@ -49,13 +49,14 @@ def make_gp_model(wide):
 
     gpr = GaussianProcessRegressor(kernel=kernel,
                                    n_restarts_optimizer=5,
-                                   normalize_y=True)
+                                   normalize_y=True,
+                                   random_state=42)
 
     gpr.fit(train_Xs, train_ys)
 
     app.logger.info(f'fitted model with: {gpr.kernel_}')
     app.logger.info(f'log marginal likelihood: '
-                    '{gpr.log_marginal_likelihood_value_}')
+                    f'{gpr.log_marginal_likelihood_value_}')
 
     return gpr
 
