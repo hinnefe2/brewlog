@@ -75,6 +75,7 @@ def plot_predictions(pred, grind_slice=4, cool_slice=30):
     for ax in (ax1, ax2):
         ax.set_xlabel('steep time (s)')
         ax.set_ylabel('water:coffee ratio')
+        ax.grid(False)
         # ax.scatter(train_Xs.immersion_time.values,
         #              train_Xs.ratio.values,
         #              c=train_ys.values.flatten(),
