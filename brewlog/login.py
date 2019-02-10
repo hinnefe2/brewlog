@@ -14,7 +14,7 @@ REDIRECT_URI_DEV = "http://localhost:5000/gCallback"
 AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
 TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
 SCOPE = ["https://www.googleapis.com/auth/userinfo.email",
-         "https://www.googleapis.com/auth/plus.me"]
+         "openid"]
 
 CLIENT_SECRET = os.getenv("BREWLOG_SECRET_KEY")
 
