@@ -23,9 +23,9 @@ APP_CONFIG = {
             {'name': 'wait_cool', 'descr': 'water cool'},
             {'name': 'bloom', 'descr': 'bloom'},
             {'name': 'pour', 'descr': 'pour'},
-            {'name': 'wait_drip', 'descr': 'wait_drip'},
-            ],
-        }
+            {'name': 'wait_drip', 'descr': 'wait for drip'}
+            ]
+        },
     'scores': [
         {'name': 'sour', 'descr': 'Sourness'},
         {'name': 'bitter', 'descr': 'Bitterness'},
