@@ -23,9 +23,11 @@ def index():
     # merge the latest recipe values from the db with the config dict
     recipe = read_last_recipe()
 
+    method = request.args.get('method')
+
     return render_template('index.html',
                            recipe=recipe,
-                           steps=APP_CONFIG['steps'],
+                           steps=APP_CONFIG['steps'][method],
                            scores=APP_CONFIG['scores'])
 
 
