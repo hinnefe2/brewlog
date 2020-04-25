@@ -27,7 +27,8 @@ def record_brew(form_dict):
         db.session.add(record)
 
     # insert the step values along with their odering
-    for idx, step in enumerate(APP_CONFIG['steps']):
+    method = form_dict.get('method')
+    for idx, step in enumerate(APP_CONFIG['steps'][method]):
 
         # convert strings like '00:01:03' to timedeltas
         mins, secs, h_secs = map(int, form_dict[step['name']].split(':'))

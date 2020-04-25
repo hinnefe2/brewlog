@@ -26,6 +26,7 @@ def index():
     method = request.args.get('method')
 
     return render_template('index.html',
+                           method=method,
                            recipe=recipe,
                            steps=APP_CONFIG['steps'][method],
                            scores=APP_CONFIG['scores'])
